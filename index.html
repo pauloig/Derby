@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>El Gallo de Panchita</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #d35400;
+            --bg: #fdfdfd;
+        }
+
+        /* --- FRONTEND MOBILE FIRST (SIN CAMBIOS) --- */
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding: 10px; }
+        .app-card { max-width: 450px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .header-app { text-align: center; border-bottom: 2px solid var(--accent); margin-bottom: 20px; padding-bottom: 10px; }
+        .header-app h1 { color: var(--accent); margin: 0; font-size: 1.5rem; text-transform: uppercase; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: 600; margin-bottom: 5px; color: #555; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
+        .row-inputs { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-bottom: 8px; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px; }
+        .btn-add { background-color: #e9ecef; color: #495057; border: 1px solid #ced4da; }
+        .btn-print { background-color: #d35400; color: white; }
+        .btn-reset { background-color: transparent; color: #888; font-size: 0.8rem; text-decoration: underline; margin-top: 15px; }
+
+        /* --- ÁREA DE IMPRESIÓN AJUSTADA (PRECISIÓN 58mm) --- */
+        #ticket-render { 
+            display: none; 
+            width: 200px; /* Ancho real de impresión seguro */
+            margin: 0; 
+            padding: 0;
+            background: white;
+            color: black;
+            text-align: center;
+        }
+
+        .ticket-logo { width: 140px; height: auto; filter: grayscale(1); margin-bottom: 4px; }
+        .ticket-title { font-size: 14px; font-weight: bold; font-family: 'Courier New', monospace; }
+        .ticket-info { text-align: left; font-size: 11px; font-family: 'Courier New', monospace; margin: 8px 0; line-height: 1.1; }
+        .ticket-table { width: 100%; border-collapse: collapse; }
+        .ticket-table th, .ticket-table td { border: 1px solid black; padding: 3px; font-size: 11px; font-family: 'Courier New', monospace; }
+        .signature-area { margin-top: 25px; border-top: 1px solid black; width: 85%; display: inline-block; padding-top: 3px; font-size: 10px; font-family: 'Courier New', monospace; font-weight: bold; }
+
+        @media print {
+            @page { margin: 0; size: auto; }
+            #ui-layer { display: none; }
+            #ticket-render { display: block !important; margin: 0 auto; }
+            body { background: white; padding: 0; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-card" id="ui-layer">
+    <div class="header-app">
+        <h1>El Gallo de Panchita</h1>
+        <small>Control de Pesaje</small>
+    </div>
+
+    <div class="form-group">
+        <label>Nombre del Equipo:</label>
+        <input type="text" id="equipoNombre" placeholder="Nombre del Equipo">
+    </div>
+
+    <div id="contenedor-filas">
+        <label>Registros (Marchamo y Peso):</label>
+        <div class="row-inputs">
+            <input type="text" class="m-val" placeholder="Marchamo">
+            <input type="number" step="0.01" class="p-val" placeholder="Peso">
+        </div>
+    </div>
+
+    <button class="btn btn-add" onclick="agregarRegistro()">+ Agregar Fila (Máx 7)</button>
+    <button class="btn btn-print" onclick="generarImpresion()">🖨️ IMPRIMIR TICKET</button>
+    <center><button class="btn btn-reset" onclick="location.reload()">Borrar Formulario</button></center>
+</div>
+
+<div id="ticket-render">
+    <img src="logo.jpg" class="ticket-logo" alt="Logo">
+    <div class="ticket-title">EL GALLO DE PANCHITA</div>
+    <div style="font-size: 9px; font-family: 'Courier New', monospace; margin-bottom: 5px;">DERBY ROBERTO PINEDA</div>
+    
+    <div class="ticket-info">
+        <b>EQ:</b> <span id="out-eq"></span><br>
+        <b>FECHA:</b> <span id="out-fecha"></span><br>
+        <b>HORA:</b> <span id="out-hora"></span>
+    </div>
+
+    <table class="ticket-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>MAR.</th>
+                <th>PESO</th>
+            </tr>
+        </thead>
+        <tbody id="out-tabla"></tbody>
+    </table>
+
+    <div class="signature-area">FIRMA CONFORMIDAD</div>
+    <div style="font-size: 8px; margin-top: 10px; font-family: 'Courier New', monospace;">SISTEMA RAWBT V.2026</div>
+</div>
+
+<script>
+    let totalFilas = 1;
+
+    function agregarRegistro() {
+        if (totalFilas < 7) {
+            const container = document.getElementById('contenedor-filas');
+            const div = document.createElement('div');
+            div.className = 'row-inputs';
+            div.innerHTML = `<input type="text" class="m-val" placeholder="Marchamo"><input type="number" step="0.01" class="p-val" placeholder="Peso">`;
+            container.appendChild(div);
+            totalFilas++;
+        }
+    }
+
+    function generarImpresion() {
+        const equipo = document.getElementById('equipoNombre').value;
+        const marchamos = document.getElementsByClassName('m-val');
+        const pesos = document.getElementsByClassName('p-val');
+        const tabla = document.getElementById('out-tabla');
+        const ahora = new Date();
+        
+        document.getElementById('out-eq').innerText = equipo.toUpperCase() || "SIN NOMBRE";
+        document.getElementById('out-fecha').innerText = ahora.toLocaleDateString();
+        document.getElementById('out-hora').innerText = ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+        tabla.innerHTML = '';
+        let validos = 0;
+
+        for (let i = 0; i < marchamos.length; i++) {
+            if (marchamos[i].value || pesos[i].value) {
+                validos++;
+                tabla.innerHTML += `<tr><td>${validos}</td><td>${marchamos[i].value}</td><td>${pesos[i].value}</td></tr>`;
+            }
+        }
+
+        if (validos > 0) window.print();
+        else alert("Datos incompletos.");
+    }
+</script>
+
+</body>
+</html>
