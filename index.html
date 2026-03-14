@@ -3,41 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>El Gallo de Panchita</title>
+    <title>DERBY</title>
     <style>
         :root {
             --primary: #2c3e50;
             --accent: #d35400;
-            --bg: #fdfdfd;
+            --bg: #f0f2f5;
         }
 
-        /* --- FRONTEND MOBILE FIRST (SIN CAMBIOS) --- */
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding: 10px; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); margin: 0; padding: 10px; }
         .app-card { max-width: 450px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .header-app { text-align: center; border-bottom: 2px solid var(--accent); margin-bottom: 20px; padding-bottom: 10px; }
-        .header-app h1 { color: var(--accent); margin: 0; font-size: 1.5rem; text-transform: uppercase; }
+        
+        /* Navegación */
+        .nav-tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .nav-btn { flex: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer; background: #e9ecef; font-weight: bold; color: #666; font-size: 0.8rem; }
+        .nav-btn.active { background: var(--accent); color: white; }
+
+        .header-app { text-align: center; margin-bottom: 20px; }
+        .header-app h1 { color: var(--accent); margin: 0; font-size: 1.4rem; text-transform: uppercase; }
+        
         .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: 600; margin-bottom: 5px; color: #555; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        label { display: block; font-weight: 600; margin-bottom: 5px; color: #555; font-size: 0.9rem; }
         input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
+        
+        .section-title { background: #f8f9fa; padding: 8px; border-left: 4px solid var(--accent); margin: 15px 0 10px 0; font-weight: bold; font-size: 0.9rem; }
+        
         .row-inputs { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-bottom: 8px; }
         .btn { width: 100%; padding: 15px; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px; }
         .btn-add { background-color: #e9ecef; color: #495057; border: 1px solid #ced4da; }
-        .btn-print { background-color: #d35400; color: white; }
-        .btn-reset { background-color: transparent; color: #888; font-size: 0.8rem; text-decoration: underline; margin-top: 15px; }
+        .btn-print { background-color: var(--accent); color: white; }
+        .btn-reset { background-color: transparent; color: #888; font-size: 0.8rem; text-decoration: underline; margin-top: 15px; border:none; width:100%; }
 
-        /* --- ÁREA DE IMPRESIÓN AJUSTADA (PRECISIÓN 58mm) --- */
-        #ticket-render { 
-            display: none; 
-            width: 200px; /* Ancho real de impresión seguro */
-            margin: 0; 
-            padding: 0;
-            background: white;
-            color: black;
-            text-align: center;
-        }
-
-        .ticket-logo { width: 140px; height: auto; filter: grayscale(1); margin-bottom: 4px; }
-        .ticket-title { font-size: 14px; font-weight: bold; font-family: 'Courier New', monospace; }
+        /* Área de Impresión (58mm) */
+        #ticket-render { display: none; width: 200px; margin: 0; padding: 0; background: white; color: black; text-align: center; }
+        .ticket-logo { width: 120px; height: auto; filter: grayscale(1); margin-bottom: 4px; }
+        .ticket-title { font-size: 13px; font-weight: bold; font-family: 'Courier New', monospace; }
         .ticket-info { text-align: left; font-size: 11px; font-family: 'Courier New', monospace; margin: 8px 0; line-height: 1.1; }
         .ticket-table { width: 100%; border-collapse: collapse; }
         .ticket-table th, .ticket-table td { border: 1px solid black; padding: 3px; font-size: 11px; font-family: 'Courier New', monospace; }
@@ -49,6 +50,8 @@
             #ticket-render { display: block !important; margin: 0 auto; }
             body { background: white; padding: 0; margin: 0; }
         }
+
+        .hidden { display: none; }
     </style>
 </head>
 <body>
@@ -56,58 +59,95 @@
 <div class="app-card" id="ui-layer">
     <div class="header-app">
         <h1>DERBY ROBERTO PINEDA</h1>
-        <small>Control de Pesaje</small>
+        <small id="sub-title">Control de Pesaje</small>
     </div>
 
-    <div class="form-group">
-        <label>Nombre del Equipo:</label>
-        <input type="text" id="equipoNombre" placeholder="Nombre del Equipo">
+    <div class="nav-tabs">
+        <button class="nav-btn active" onclick="switchTab('pesaje')">PESAJE</button>
+        <button class="nav-btn" onclick="switchTab('pelea')">CONTROL PELEA</button>
     </div>
 
-    <div id="contenedor-filas">
-        <label>Registros (Marchamo y Peso):</label>
-        <div class="row-inputs">
-            <input type="text" class="m-val" placeholder="Marchamo">
-            <input type="number" step="0.01" class="p-val" placeholder="Peso">
+    <div id="tab-pesaje">
+        <div class="form-group">
+            <label>Nombre del Equipo:</label>
+            <input type="text" id="equipoNombre" placeholder="Nombre del Equipo">
+        </div>
+        <div id="contenedor-filas">
+            <label>Registros (Marchamo y Peso):</label>
+            <div class="row-inputs">
+                <input type="text" class="m-val" placeholder="Marchamo">
+                <input type="number" step="0.01" class="p-val" placeholder="Peso">
+            </div>
+        </div>
+        <button class="btn btn-add" onclick="agregarRegistro()">+ Agregar Fila</button>
+    </div>
+
+    <div id="tab-pelea" class="hidden">
+        <div class="form-row">
+            <div class="form-group">
+                <label>No. Ronda:</label>
+                <input type="number" id="noRonda" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label>No. Pelea:</label>
+                <input type="number" id="noPelea" placeholder="0">
+            </div>
+        </div>
+        
+        <div class="section-title">EQUIPO</div>
+        <div class="form-group">
+            <input type="text" id="equipoPropio" placeholder="Nombre de tu Equipo">
+        </div>
+        <div class="form-group">
+            <input type="text" id="marchamoPropio" placeholder="No. de Marchamo">
+        </div>
+
+        <div class="section-title">CONTRINCANTE</div>
+        <div class="form-group">
+            <input type="text" id="equipoRival" placeholder="Nombre del Contrincante">
+        </div>
+        <div class="form-group">
+            <input type="text" id="marchamoRival" placeholder="No. de Marchamo Rival">
         </div>
     </div>
 
-    <button class="btn btn-add" onclick="agregarRegistro()">+ Agregar Fila (Máx 7)</button>
     <button class="btn btn-print" onclick="generarImpresion()">🖨️ IMPRIMIR TICKET</button>
-    <center><button class="btn btn-reset" onclick="location.reload()">Borrar Formulario</button></center>
+    <button class="btn btn-reset" onclick="location.reload()">Borrar Formulario</button>
 </div>
 
 <div id="ticket-render">
-    <img src="Logo.jpg" class="ticket-logo" alt="Logo">
+    <img src="logo.jpg" class="ticket-logo" alt="Logo">
     <div class="ticket-title">DERBY ROBERTO PINEDA</div>
-    <div style="font-size: 9px; font-family: 'Courier New', monospace; margin-bottom: 5px;">control de pesaje</div>
+    <div id="ticket-type" style="font-size: 10px; font-family: 'Courier New', monospace; text-transform: uppercase; border-bottom: 1px dashed #000; padding-bottom: 3px;">Control de Pesaje</div>
     
-    <div class="ticket-info">
-        <b>EQ:</b> <span id="out-eq"></span><br>
-        <b>FECHA:</b> <span id="out-fecha"></span><br>
-        <b>HORA:</b> <span id="out-hora"></span>
-    </div>
+    <div class="ticket-info" id="ticket-data">
+        </div>
 
-    <table class="ticket-table">
+    <table class="ticket-table" id="ticket-table-container">
         <thead>
-            <tr>
-                <th>#</th>
-                <th>MAR.</th>
-                <th>PESO</th>
-            </tr>
+            <tr><th>#</th><th>MAR.</th><th>PESO</th></tr>
         </thead>
         <tbody id="out-tabla"></tbody>
     </table>
 
     <div class="signature-area">FIRMA CONFORMIDAD</div>
-    <div style="font-size: 8px; margin-top: 10px; font-family: 'Courier New', monospace;">V.2026</div>
+    <div style="font-size: 8px; margin-top: 10px; font-family: 'Courier New', monospace;">SISTEMA V.2026</div>
 </div>
 
 <script>
+    let currentTab = 'pesaje';
     let totalFilas = 1;
 
+    function switchTab(tab) {
+        currentTab = tab;
+        document.getElementById('tab-pesaje').classList.toggle('hidden', tab !== 'pesaje');
+        document.getElementById('tab-pelea').classList.toggle('hidden', tab !== 'pelea');
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.innerText.toLowerCase().includes(tab)));
+        document.getElementById('sub-title').innerText = tab === 'pesaje' ? 'Control de Pesaje' : 'Control de Pelea';
+    }
+
     function agregarRegistro() {
-        if (totalFilas < 7) {
+        if (totalFilas < 15) {
             const container = document.getElementById('contenedor-filas');
             const div = document.createElement('div');
             div.className = 'row-inputs';
@@ -118,30 +158,57 @@
     }
 
     function generarImpresion() {
-        const equipo = document.getElementById('equipoNombre').value;
-        const marchamos = document.getElementsByClassName('m-val');
-        const pesos = document.getElementsByClassName('p-val');
-        const tabla = document.getElementById('out-tabla');
         const ahora = new Date();
+        const fechaStr = ahora.toLocaleDateString();
+        const horaStr = ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const infoDiv = document.getElementById('ticket-data');
+        const tablaContainer = document.getElementById('ticket-table-container');
         
-        document.getElementById('out-eq').innerText = equipo.toUpperCase() || "SIN NOMBRE";
-        document.getElementById('out-fecha').innerText = ahora.toLocaleDateString();
-        document.getElementById('out-hora').innerText = ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-
-        tabla.innerHTML = '';
-        let validos = 0;
-
-        for (let i = 0; i < marchamos.length; i++) {
-            if (marchamos[i].value || pesos[i].value) {
-                validos++;
-                tabla.innerHTML += `<tr><td>${validos}</td><td>${marchamos[i].value}</td><td>${pesos[i].value}</td></tr>`;
+        if (currentTab === 'pesaje') {
+            const equipo = document.getElementById('equipoNombre').value.toUpperCase() || "SIN NOMBRE";
+            document.getElementById('ticket-type').innerText = "Control de Pesaje";
+            tablaContainer.classList.remove('hidden');
+            
+            infoDiv.innerHTML = `<b>EQUIPO:</b> ${equipo}<br><b>FECHA:</b> ${fechaStr}<br><b>HORA:</b> ${horaStr}`;
+            
+            const marchamos = document.getElementsByClassName('m-val');
+            const pesos = document.getElementsByClassName('p-val');
+            const tabla = document.getElementById('out-tabla');
+            tabla.innerHTML = '';
+            let validos = 0;
+            for (let i = 0; i < marchamos.length; i++) {
+                if (marchamos[i].value || pesos[i].value) {
+                    validos++;
+                    tabla.innerHTML += `<tr><td>${validos}</td><td>${marchamos[i].value}</td><td>${pesos[i].value}</td></tr>`;
+                }
             }
+            if (validos === 0) return alert("Ingrese datos de pesaje.");
+            
+        } else {
+            document.getElementById('ticket-type').innerText = "Control de Pelea";
+            tablaContainer.classList.add('hidden');
+            
+            const r = document.getElementById('noRonda').value;
+            const p = document.getElementById('noPelea').value;
+            const ep = document.getElementById('equipoPropio').value.toUpperCase();
+            const mp = document.getElementById('marchamoPropio').value;
+            const er = document.getElementById('equipoRival').value.toUpperCase();
+            const mr = document.getElementById('marchamoRival').value;
+
+            infoDiv.innerHTML = `
+                <b>RONDA:</b> ${r} <b>PELEA:</b> ${p}<br>
+                <div style="border: 1px solid black; margin: 5px 0; padding: 3px;">
+                <b>EQUIPO:</b> ${ep}<br><b>MARCHAMO:</b> ${mp}
+                </div>
+                <div style="border: 1px solid black; margin: 5px 0; padding: 3px;">
+                <b>RIVAL:</b> ${er}<br><b>MARCHAMO:</b> ${mr}
+                </div>
+                <b>FECHA:</b> ${fechaStr} <b>HORA:</b> ${horaStr}
+            `;
         }
 
-        if (validos > 0) window.print();
-        else alert("Datos incompletos.");
+        window.print();
     }
 </script>
-
 </body>
 </html>
